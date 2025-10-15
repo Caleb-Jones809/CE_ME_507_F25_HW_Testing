@@ -4,8 +4,8 @@ from matplotlib import pyplot as plt
 # Import appropriate functionality to complete this task
 # here is some example text that could inform you how to do this
 
-import Langrange_basis_functions as basis
-import uniDimensionalXmap as xmap
+import Univariate_Lagrange_Basis_Functions as basis
+import UniDimensionalXmap as xmap
 import LagrangeBasisFuncDerivative as derv
 import Gaussian_Quadrature as gq
 
