@@ -12,15 +12,11 @@ import math
 import matplotlib
 from matplotlib import pyplot as plt
 
-# Copy or import functionality that you created 
-# in previous homework assignments to complete
-# this homework and minimize the amount of 
-# work you have to repeat
-
-# this class was created earlier in a previous
-# assignment, but has been extended to cope with
-# derivatives of basis functions and to plot
-# Jacobians
+from Univariate_Lagrange_Basis_Functions import LagrangeBasisEvaluation
+from MultiDimensionalBasisFunctions import MultiDimensionalBasisFunction
+from Univariate_Lagrange_Basis_Functions import LagrangeBasisEvaluation
+from LagrangeBasisFuncDerivative import LagrangeBasisDervParamMultiD, LagrangeBasisParamDervEvaluation
+#from MultiDimensionalJacobians import Nbasisfuncs EvalBasisFunction, EvalBasisDerivative, EvaluateFunctionParentDomain, EvaluateSpatialMapping, EvaluateDeformationGradient, EvaluateJacobian
 
 # This is a class that describes a Lagrange basis
 # in two dimensions
@@ -35,59 +31,91 @@ class LagrangeBasis2D:
     # product of basis functions in the x (xi)
     # and y (eta) directions
     def NBasisFuncs(self):
-        # IMPORT/COPY THIS FROM EARLIER HW
-        return
+        return (self.degs[0]+1) * (self.degs[1]+1)
         
     # basis function evaluation code from 
     # previous homework assignment
     # this should be imported from that assignment
     # or copied before this class is defined
     def EvalBasisFunction(self,A,xi_vals):
-        # IMPORT/COPY THIS FROM EARLIER HW
-        return      
+        return MultiDimensionalBasisFunction(A, self.degs, self.interp_pts, xi_vals) 
     
     # derivative of basis function code
     # from previous homework
     def EvalBasisDerivative(self,A,xis,dim):
         # IMPORT/COPY THIS FROM RECENT HOMEWORK
-        return 
+        return LagrangeBasisDervParamMultiD(A, self.degs, self.interp_pts, xis, dim)
 
 
     # Evaluate a sum of basis functions times 
     # coefficients on the parent domain
     def EvaluateFunctionParentDomain(self, d_coeffs, xi_vals):
-        # IMPORT/COPY THIS FROM RECENT HOMEWORK
-        return
-        
+        u = 0
+        nbfs = self.NBasisFuncs()
+        for i in range(nbfs):
+            u += d_coeffs[i] * self.EvalBasisFunction(i, xi_vals)
+
+        return u
+    
     # Evaluate the spatial mapping from xi and eta
     # into x and y coordinates
     def EvaluateSpatialMapping(self, x_pts, xi_vals):
-        # IMPORT/COPY THIS FROM RECENT HOMEWORK
-        return
+        xe = 0  
+        nbfs = self.NBasisFuncs()
+        for i in range(nbfs): 
+            xe += np.array(x_pts[i]) * self.EvalBasisFunction(i, xi_vals)
+        return xe
     
     # Evaluate the Deformation Gradient (i.e.
     # the Jacobian matrix)
     def EvaluateDeformationGradient(self, x_pts, xi_vals):
-        # IMPORT/COPY THIS FROM RECENT HOMEWORK
-        return
+        # initalize
+        dxdxi, dxdeta = 0.0, 0.0
+        dydxi, dydeta = 0.0, 0.0
+
+        for a in range(self.NBasisFuncs()):
+            # get derivatives
+            xi_derv = self.EvalBasisDerivative(a, xi_vals, dim=0)
+            eta_derv = self.EvalBasisDerivative(a, xi_vals, dim=1)
+
+            # multiply by x_pts
+            xa, ya = x_pts[a]
+            dxdxi += xa * xi_derv
+            dxdeta += xa * eta_derv
+            dydxi += ya * xi_derv
+            dydeta += ya*eta_derv
+
+        # make DF
+        DF = np.array([[dxdxi, dxdeta], [dydxi, dydeta]])
+        return DF
     
     # Evaluate the jacobian (or the determinant
     # of the deformation gradient)
     def EvaluateJacobian(self, x_pts, xi_vals):
-        # IMPORT/COPY THIS FROM RECENT HOMEWORK
-        return
+        # get DF
+        DF = self.EvaluateDeformationGradient(x_pts, xi_vals)
+        # return determinent
+        return np.linalg.det(DF)
 
     # Evaluate the parametric gradient of a basis
     # function
     def EvaluateBasisParametricGradient(self,A, xi_vals):
-        # COMPLETE THIS TIME
-        return
+        xi_derv = self.EvalBasisDerivative(A, xi_vals, dim=0)
+        eta_derv = self.EvalBasisDerivative(A, xi_vals, dim=1)
+
+        return [xi_derv, eta_derv]
 
     # Evaluate the parametric gradient of a basis
     # function
     def EvaluateBasisSpatialGradient(self,A, x_pts, xi_vals):
-        # COMPLETE THIS TIME
-        return
+        # = J^-T *para_grad
+        jacobian = self.EvaluateDeformationGradient(x_pts, xi_vals)
+        inv_tran_jacob = np.linalg.inv(jacobian.T)
+        para_grad = self.EvaluateBasisParametricGradient(A, xi_vals)
+        return inv_tran_jacob @ para_grad
+    
+    def PlotJacobian(self,x_pts,npts=21,contours = False, parent_domain = False):
+        return self.mdj.PlotJacobian(self,x_pts,npts=21,contours = False, parent_domain = False)
 
     # Grid plotting functionality that is used
     # in all other plotting functions
@@ -270,5 +298,29 @@ class LagrangeBasis2D:
         else:
             fig,ax = self.PlotGridData(X,Y,Z,contours=True,zlabel=r"$J^e(x,y)$",show_plot = False)
             ax.quiver(X,Y,U,V)
-        plt.show()
+        plt.savefig("hw10_4.png")
 
+
+
+"""degx = 2
+degy = 2
+ipx = [-1, 0, 1]#, -1, 0, 1, -1, 0, 1]
+ipy = [-1, 0, 1] #0, 0, 0, 1, 1, 1]
+# first one
+x_pts = [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2],[2,2]]
+object = LagrangeBasis2D(degx, degy, ipx, ipy)
+object.PlotJacobian(x_pts, contours=True)"""
+
+
+
+degx = 2
+degy = 2
+ipx = [-1, 0, 1]
+ipy = [-1, 0, 1]
+object = LagrangeBasis2D(degx, degy, ipx, ipy)
+X_pts = [[0,0],[0,1],[1,1],[-1,0],[-1,2],[1,2],[-2,0],[-2,3],[1,3]]
+A = 3
+#object.PlotBasisFunctionGradient(A, X_pts, parent_domain=True, parent_gradient=True)
+#object.PlotBasisFunctionGradient(A, X_pts, parent_domain=False, parent_gradient=True)
+#object.PlotBasisFunctionGradient(A, X_pts, parent_domain=True, parent_gradient=False)
+#object.PlotBasisFunctionGradient(A, X_pts, parent_domain=False, parent_gradient=False)
