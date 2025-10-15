@@ -11,15 +11,9 @@ import numpy as np
 import math
 import matplotlib
 from matplotlib import pyplot as plt
-
-
-sys.path.append('../HW6_MultiDimensionalBasisFunctions/')
-sys.path.append('../HW8_LagrangeBasisFuncDerivative/')
-
-
-import MultiDimensionalBasisFunctions as mbasis
-import LagrangeBasisFuncDerivative as mderv
-
+from MultiDimensionalBasisFunctions import MultiDimensionalBasisFunction
+from LagrangeBasisFuncDerivative import LagrangeBasisDervParamMultiD, LagrangeBasisParamDervEvaluation
+from Univariate_Lagrange_Basis_Functions import LagrangeBasisEvaluation
 # Copy or import functionality that you created 
 # in previous homework assignments to complete
 # this homework and minimize the amount of 
@@ -43,49 +37,72 @@ class LagrangeBasis2D:
     # product of basis functions in the x (xi)
     # and y (eta) directions
     def NBasisFuncs(self):
-        # IMPORT/COPY THIS FROM EARLIER HW
-        return
-
+        return (self.degs[0]+1) * (self.degs[1]+1)
         
     # basis function evaluation code from 
     # previous homework assignment
     # this should be imported from that assignment
     # or copied before this class is defined
     def EvalBasisFunction(self,A,xi_vals):
-        # IMPORT/COPY THIS FROM EARLIER HW
-        return      
-     
+        return MultiDimensionalBasisFunction(A, self.degs, self.interp_pts, xi_vals)     
     
     # derivative of basis function code
     # from previous homework
     def EvalBasisDerivative(self,A,xis,dim):
         # IMPORT/COPY THIS FROM THE MOST RECENT HOMEWORK
-        return 
+        return LagrangeBasisDervParamMultiD(A, self.degs, self.interp_pts, xis, dim)
 
 
     # Evaluate a sum of basis functions times 
     # coefficients on the parent domain
     def EvaluateFunctionParentDomain(self, d_coeffs, xi_vals):
-        # IMPORT/COPY THIS FROM EARLIER HW
-        return
+        u = 0
+        nbfs = self.NBasisFuncs()
+        for i in range(nbfs):
+            u += d_coeffs[i] * self.EvalBasisFunction(i, xi_vals)
+
+        return u
         
     # Evaluate the spatial mapping from xi and eta
     # into x and y coordinates
     def EvaluateSpatialMapping(self, x_pts, xi_vals):
-        # IMPORT/COPY THIS FROM EARLIER HW
-        return
+        xe = 0  
+        nbfs = self.NBasisFuncs()
+        for i in range(nbfs): 
+            xe += np.array(x_pts[i]) * self.EvalBasisFunction(i, xi_vals)
+        return xe
     
     # Evaluate the Deformation Gradient (i.e.
     # the Jacobian matrix)
     def EvaluateDeformationGradient(self, x_pts, xi_vals):
-        # COMPLETE THIS TIME
-        return
+
+        # initalize
+        dxdxi, dxdeta = 0.0, 0.0
+        dydxi, dydeta = 0.0, 0.0
+
+        for a in range(self.NBasisFuncs()):
+            # get derivatives
+            xi_derv = self.EvalBasisDerivative(a, xi_vals, dim=0)
+            eta_derv = self.EvalBasisDerivative(a, xi_vals, dim=1)
+
+            # multiply by x_pts
+            xa, ya = x_pts[a]
+            dxdxi += xa * xi_derv
+            dxdeta += xa * eta_derv
+            dydxi += ya * xi_derv
+            dydeta += ya*eta_derv
+
+        # make DF
+        DF = np.array([[dxdxi, dxdeta], [dydxi, dydeta]])
+        return DF
     
     # Evaluate the jacobian (or the determinant
     # of the deformation gradient)
     def EvaluateJacobian(self, x_pts, xi_vals):
-        # COMPLETE THIS TIME
-        return
+        # get DF
+        DF = self.EvaluateDeformationGradient(x_pts, xi_vals)
+        # return determinent
+        return np.linalg.det(DF)
     
     # Grid plotting functionality that is used
     # in all other plotting functions
@@ -96,7 +113,9 @@ class LagrangeBasis2D:
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
             fig.colorbar(surf)
-            plt.show()
+# RIGHT HERE
+            plt.savefig("hw9_prob4_6.png")
+            #plt.show()
         else:
             fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
             surf = ax.plot_surface(X, Y, Z, cmap=matplotlib.cm.jet,
@@ -104,7 +123,8 @@ class LagrangeBasis2D:
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
             ax.set_zlabel(zlabel)
-            plt.show()
+            plt.savefig("hw9_prob4_2.png")
+            #plt.show()
 
             
     # plot the mapping from parent domain to 
@@ -236,3 +256,33 @@ class LagrangeBasis2D:
 
 
 
+
+# prob 4
+degx = 2
+degy = 2
+ipx = [-1, 0, 1]#, -1, 0, 1, -1, 0, 1]
+ipy = [-1, 0, 1] #0, 0, 0, 1, 1, 1]
+# first one
+x_pts = [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2],[2,2]]
+object = LagrangeBasis2D(degx, degy, ipx, ipy)
+#object.PlotJacobian(x_pts, contours=True)
+
+# second one 
+xpts2 = [[0,0],[0.5,0],[1,0],[0,1],[0.5,1],[1,1],[0,2],[0.5,2],[1,2]]
+#object.PlotJacobian(xpts2, contours=True)
+
+# third one
+xpts3 = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
+#object.PlotJacobian(xpts3, contours=True)
+
+# fourth one
+xpts4 = [[0,2],[0,1],[0,0],[1,2],[1,1],[1,0],[2,2],[2,1],[2,0]]
+#object.PlotJacobian(xpts4, contours=True)
+
+# fifth one
+xpts5 = [[0,0],[1,0],[2,0],[1,1],[1,1],[1,1],[2,2],[1,2],[0,2]]
+#object.PlotJacobian(xpts5, contours=True)
+
+# sixth one
+xpts6 = [[0,0],[0,1],[1,1],[-1,0],[-1,2],[1,2],[-2,0],[-2,3],[1,3]]
+#object.PlotJacobian(xpts6, contours=True)
