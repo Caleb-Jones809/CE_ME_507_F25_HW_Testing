@@ -17,17 +17,27 @@ from matplotlib import pyplot as plt
 # import <UNCOMMENT THIS LINE AND INPUT YOUR FILENAME HERE>
 
 # higher-dimensional basis function with multi-index
-def MultiDimensionalBasisFunctionIdxs(idxs,degs,interp_pts,xis):
-    return
+from Univariate_Lagrange_Basis_Functions import LagrangeBasisEvaluation
+# return a basis function at an xi
+def MultiDimensionalBasisFunctionIdxs(a, p, pts, xi):
+    total = 1
+    for i in range(len(a)):
+        Na = LagrangeBasisEvaluation(p[i], pts[i], xi[i], a[i])
+        total *= Na
+    return total
     
-# given an integer and a vector of basis function degrees extract
-# a corresponding multi-index out
-def ExtractMultiIndexFromSingleIndex(A,degs):
-    return
-
 # higher-dimensional basis function with single index
-def MultiDimensionalBasisFunction(A,degs,interp_pts,xis):
-    return
+# return a basis function evaluated at an xi
+def MultiDimensionalBasisFunction(A, p, pts, xi):
+    a = []
+    a.append(A % (p[0] + 1))
+    for i in range(1, len(p)):
+        diviser = 1
+        for j in range(i):
+            diviser *= (p[j] + 1)
+        a.append(A // diviser)
+    a = np.array(a)
+    return MultiDimensionalBasisFunctionIdxs(a, p, pts, xi)
     
 # plot of 2D basis functions with A a single index
 def PlotTwoDimensionalParentBasisFunction(A,degs,npts = 101,contours = True):
@@ -49,7 +59,7 @@ def PlotTwoDimensionalParentBasisFunction(A,degs,npts = 101,contours = True):
         ax.set_xlabel(r"$\xi$")
         ax.set_ylabel(r"$\eta$")
         fig.colorbar(surf)
-        plt.show()
+        plt.savefig("hw6_task1_2.png")
     # 3D surface plot
     else:
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -58,5 +68,17 @@ def PlotTwoDimensionalParentBasisFunction(A,degs,npts = 101,contours = True):
         ax.set_xlabel(r"$\xi$")
         ax.set_ylabel(r"$\eta$")
         ax.set_zlabel(r"$N(\xi,\eta)$")
-        plt.show()
-        
+        plt.savefig("hw6_task1_2.png")
+
+
+# the first
+pt = np.linspace(-1, 1, 100)
+p = [1, 1]
+A = 1
+#PlotTwoDimensionalParentBasisFunction(A, p, contours=False)
+p2 = [2,1]
+#PlotTwoDimensionalParentBasisFunction(A, p2, contours=False)
+p3 = [2, 2]
+#PlotTwoDimensionalParentBasisFunction(A, p3, contours=False)
+p4 = [3, 3]
+#PlotTwoDimensionalParentBasisFunction(A, p4, contours=False)
