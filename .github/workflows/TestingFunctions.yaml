@@ -13,6 +13,14 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Disable man-db trigger (make mandb a no-op) — idempotent
+        run: |
+          set -euo pipefail
+          if [ ! -f /usr/bin/mandb.distrib ]; then
+            sudo dpkg-divert --local --rename --add /usr/bin/mandb
+            printf '#!/bin/sh\nexit 0\n' | sudo tee /usr/bin/mandb >/dev/null
+            sudo chmod +x /usr/bin/mandb
+          fi
 #      - name: Install dependencies
 #        run: |
 #          sudo apt -y update
