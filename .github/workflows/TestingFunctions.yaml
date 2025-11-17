@@ -109,4 +109,4 @@ jobs:
       - name: Test Multidimensional Quadrature with unittest
         if: ${{ always() }}
         run: |
-          python3 HW16_Multidimensional_Gaussian_Quadrature/Gaussian_Quadrature_2D.py
+          python3 HW16_Multidimensional_Gaussian_Quadrature/Gaussian_Quadrature_2D_Testing.py
