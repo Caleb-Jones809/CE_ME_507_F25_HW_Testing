@@ -67,7 +67,7 @@ class GaussQuadratureQuadrilateral:
     def __init__(self,n_quad,start = -1,end = 1, deg=2):
         self.n_quad = n_quad
         self.degs = deg
-        self.jacobian = 1
+
         [self.quad_pts,self.quad_wts] = ComputeQuadraturePtsWts(self.n_quad)
         self.start = start
         self.end = end
@@ -79,21 +79,19 @@ class GaussQuadratureQuadrilateral:
         # and Jacobians here and store them as quad_pts, quad_wts
         # and jacobian
         # initilaize
-        new_quads = np.zeros((2, (len(self.quad_pts)**2)))
-        new_quad_wts = np.zeros(len(self.quad_pts)**2)
-        k = 0
+        #new_quads = np.zeros((2, (len(self.quad_pts)**2)))
+        new_quads = []
+        #new_quad_wts = np.zeros(len(self.quad_pts)**2)
         # get the appropriate pts
         for i in self.quad_pts:
             for j in self.quad_pts:
-                new_quads[0, k] = i
-                new_quads[1, k] = j
-                k +=1
+                new_quads.append([i, j])
+
         # get wts
-        k = 0
+        new_quad_wts = []
         for x in self.quad_wts:
             for y in self.quad_wts:
-                new_quad_wts[k] = x*y
-                k += 1
+                new_quad_wts.append(x*y)
         self.quad_pts = new_quads
         self.quad_wts = new_quad_wts
         # get the jacobian
@@ -108,3 +106,9 @@ class GaussQuadratureQuadrilateral:
 
 #object = GaussQuadratureQuadrilateral(3)
 #print(object.quad_wts)
+
+
+
+"""new_quads[0, k] = i
+    new_quads[1, k] = j
+    k +=1"""
