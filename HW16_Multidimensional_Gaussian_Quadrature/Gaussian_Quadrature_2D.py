@@ -57,20 +57,54 @@ class GaussQuadrature1D:
      
     def __TransformToInterval__(self,start,end):
         # complete this function
-        pass
+        new_pts = ((end - start)/2) * self.quad_pts + np.ones_like(self.quad_pts) * ((start+end) / 2)
+        self.quad_pts = new_pts
+        self.jacobian = (end-start) / 2
         
 
 class GaussQuadratureQuadrilateral:
     
-    def __init__(self,n_quad,start = -1,end = 1):
+    def __init__(self,n_quad,start = -1,end = 1, deg=2):
         self.n_quad = n_quad
+        self.degs = deg
         self.jacobian = 1
         [self.quad_pts,self.quad_wts] = ComputeQuadraturePtsWts(self.n_quad)
         self.start = start
         self.end = end
         if start != -1 or end != 1:
             self.__TransformToInterval__(start,end)
+
         
         # create the tensor product of quadrature points and weights
         # and Jacobians here and store them as quad_pts, quad_wts
         # and jacobian
+        # initilaize
+        new_quads = np.zeros((2, (len(self.quad_pts)**2)))
+        new_quad_wts = np.zeros(len(self.quad_pts)**2)
+        k = 0
+        # get the appropriate pts
+        for i in self.quad_pts:
+            for j in self.quad_pts:
+                new_quads[0, k] = i
+                new_quads[1, k] = j
+                k +=1
+        # get wts
+        k = 0
+        for x in self.quad_wts:
+            for y in self.quad_wts:
+                new_quad_wts[k] = x*y
+                k += 1
+        self.quad_pts = new_quads
+        self.quad_wts = new_quad_wts
+        # get the jacobian
+        new_jacob = ((end-start)/2) ** 2
+        self.jacobian = new_jacob
+        
+    def __TransformToInterval__(self,start,end):
+        new_pts = ((end - start)/2) * self.quad_pts + np.ones_like(self.quad_pts) * ((start+end) / 2)
+        self.quad_pts = new_pts
+        self.jacobian = (end-start) / 2
+
+
+#object = GaussQuadratureQuadrilateral(3)
+#print(object.quad_wts)
