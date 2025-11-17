@@ -98,3 +98,7 @@ jobs:
         run: |
           export PYTHONPATH="$HW3_DIR:$HW6_DIR:$HW7_DIR:$HW8_DIR:$HW9_DIR:$HW10_DIR"
           python3 HW13_Error_Convergence_1D/OneD_FEM_Convergence_Rates_Testing.py
+      - name: Test Multidimensional Quadrature with unittest
+        if: ${{ always() }}
+        run: |
+          python3 HW16_Multidimensional_Gaussian_Quadrature/Gaussian_Quadrature_2D.py
